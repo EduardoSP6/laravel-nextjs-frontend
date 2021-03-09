@@ -1,4 +1,4 @@
-class FormErrors 
+class FormError 
 {
     errors = {};
 
@@ -19,4 +19,4 @@ class FormErrors
     }
 }
 
-export default FormErrors;
+export default FormError;

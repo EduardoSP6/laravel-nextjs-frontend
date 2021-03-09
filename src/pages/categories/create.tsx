@@ -1,14 +1,14 @@
 import React, { FormEvent, useState } from 'react'
 import { useRouter } from 'next/router'
 
-import FormErrors from '../../helpers/FormErrors'
+import FormError from '../../helpers/FormError'
 
 const CategoriesCreate: React.FC = () => {
     
     const router = useRouter()
 
     const [name, setName] = useState("")
-    const [formErrors, setFormErrors] = useState<FormErrors>(new FormErrors()) 
+    const [formErrors, setFormErrors] = useState<FormError>(new FormError()) 
 
     // submit do form
     async function handleSubmit(event: FormEvent) {
@@ -44,7 +44,7 @@ const CategoriesCreate: React.FC = () => {
 
             if (res.status === 422) {
                 const resData = await res.json()
-                const frmError = new FormErrors()
+                const frmError = new FormError()
                 frmError.setErrors(resData)
                 setFormErrors(frmError)
             }

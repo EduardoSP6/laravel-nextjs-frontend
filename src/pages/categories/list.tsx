@@ -20,6 +20,27 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
 
     const router = useRouter()
 
+    // excluir registro
+    async function handleDelete(category: Category) {
+
+        const headers = new Headers()
+        headers.append("Accept", "application/json")
+        headers.append("Content-Type", "application/json")
+        // headers.append("Authorization", "Bearer")
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/${category.uuid}`, {
+            method: 'DELETE',
+            headers: headers,
+        })
+
+        if (res.status !== 200) {
+            alert("Erro ao excluir registro!")
+        } else {
+            router.replace(router.asPath)
+            alert("Registro excluído com sucesso!")
+        }
+    }
+
     return (
         <div>
             <h1>Categorias</h1>
@@ -33,6 +54,7 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
                         <tr>
                             <th>Nome</th>
                             <th>Criado em</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,6 +62,21 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
                             <tr key={category.uuid}>
                                 <td>{category.name}</td>
                                 <td>{category.created_at}</td>
+                                <td>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => router.push({
+                                            pathname: "/categories/edit",
+                                            query: { uuid: category.uuid }
+                                        })}>
+                                        Editar
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => handleDelete(category)}>
+                                        Excluir
+                                    </button>
+                                </td>
                             </tr>  
                         ))}
                     </tbody>
