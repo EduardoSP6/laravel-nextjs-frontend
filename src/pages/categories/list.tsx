@@ -1,6 +1,16 @@
 import { GetServerSideProps, GetStaticProps } from 'next'
 import React from 'react'
 import { useRouter } from 'next/router'
+import { 
+    DataGrid, 
+    GridColDef, 
+    GridCellParams, 
+    ValueFormatterParams, 
+    GridToolbar,
+    GridSortDirection 
+} from '@material-ui/data-grid'
+import Button from '@material-ui/core/Button'
+import Moment from 'moment'
 
 type Category = {
     id: number,
@@ -20,15 +30,70 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
 
     const router = useRouter()
 
+    // Link da documentacao da tabela: https://material-ui.com/pt/components/data-grid/
+
+    // definicao das colunas da tabela
+    const columns: GridColDef[] = [
+        { 
+            field: 'name', 
+            headerName: 'Nome', 
+            flex: 1,
+        },
+        { 
+            field: 'created_at', 
+            headerName: 'Criado em', 
+            flex: 0.3,
+            valueFormatter: (params: ValueFormatterParams) => 
+                (Moment(String(params.value)).format("DD/MM/YYYY HH:mm:ss"))
+             
+        },
+        { 
+            field: 'actions', 
+            headerName: 'Ações',
+            sortable: false,
+            filterable: false,
+            flex: 0.3,
+            renderCell: (params: GridCellParams) => (
+                <>
+                    <Button 
+                        type="button"
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        style={{ marginLeft: 16 }} 
+                        onClick={() => router.push({
+                            pathname: "/categories/edit",
+                            query: { uuid: params.getValue('uuid') }
+                        })}>
+                        Editar
+                    </Button>
+                    <Button 
+                        type="button"
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        style={{ marginLeft: 16 }} 
+                        onClick={() => handleDelete(params.getValue('uuid'))}>
+                        Excluir
+                    </Button>
+                </>
+            ),
+        },
+      ];
+
     // excluir registro
-    async function handleDelete(category: Category) {
+    async function handleDelete(uuid: String) {
+        
+        if (!confirm("Deseja realmente excluir este registro?")) {
+            return;
+        }
 
         const headers = new Headers()
         headers.append("Accept", "application/json")
         headers.append("Content-Type", "application/json")
         // headers.append("Authorization", "Bearer")
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/${category.uuid}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/${uuid}`, {
             method: 'DELETE',
             headers: headers,
         })
@@ -49,38 +114,23 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
             <br />
             <br />
             {categories ? (
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Criado em</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {categories.map(category => (
-                            <tr key={category.uuid}>
-                                <td>{category.name}</td>
-                                <td>{category.created_at}</td>
-                                <td>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => router.push({
-                                            pathname: "/categories/edit",
-                                            query: { uuid: category.uuid }
-                                        })}>
-                                        Editar
-                                    </button>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => handleDelete(category)}>
-                                        Excluir
-                                    </button>
-                                </td>
-                            </tr>  
-                        ))}
-                    </tbody>
-                </table>
+                <div style={{ width: '100%', height: 800, margin: 0, padding: 9 }}>
+                    <DataGrid 
+                            columns={columns} 
+                            pageSize={25} 
+                            rowsPerPageOptions={[10, 20, 25, 50, 100]} 
+                            rows={categories}
+                            components={{
+                                Toolbar: GridToolbar,
+                            }}
+                            sortModel={[
+                                {
+                                field: 'name',
+                                sort: 'asc' as GridSortDirection,
+                                },
+                            ]} 
+                        />
+                </div>
             ) : (
                 <div>Loading...</div>
             )}
