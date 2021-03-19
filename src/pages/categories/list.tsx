@@ -63,7 +63,7 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
                         style={{ marginLeft: 16 }} 
                         onClick={() => router.push({
                             pathname: "/categories/edit",
-                            query: { uuid: params.getValue('uuid') }
+                            query: { uuid: params.row.uuid }
                         })}>
                         Editar
                     </Button>
@@ -73,7 +73,7 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
                         color="secondary"
                         size="small"
                         style={{ marginLeft: 16 }} 
-                        onClick={() => handleDelete(params.getValue('uuid'))}>
+                        onClick={() => handleDelete(params.row.uuid)}>
                         Excluir
                     </Button>
                 </>
