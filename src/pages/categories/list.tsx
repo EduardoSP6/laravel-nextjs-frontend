@@ -1,6 +1,7 @@
 import { GetServerSideProps, GetStaticProps } from 'next'
 import React from 'react'
 import { useRouter } from 'next/router'
+import Link from 'next/link'
 import { 
     DataGrid, 
     GridColDef, 
@@ -11,6 +12,8 @@ import {
 } from '@material-ui/data-grid'
 import Button from '@material-ui/core/Button'
 import Moment from 'moment'
+import { useFetch } from '../../helpers/useFetch'
+import { mutate, trigger } from 'swr'
 
 type Category = {
     id: number,
@@ -24,12 +27,20 @@ type CategoriesProps = {
     categories: Category[]
 }
 
-const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
-
-    const { categories } = props;
+const CategoriesList: React.FC<CategoriesProps> = () => {
 
     const router = useRouter()
 
+    const { data, error } = useFetch<Category[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
+
+    if (!data && !error) {
+        return <p>Carregando...</p>
+    }
+
+    if (error) {
+        return <p>Erro: {error.message}</p>
+    }
+    
     // Link da documentacao da tabela: https://material-ui.com/pt/components/data-grid/
 
     // definicao das colunas da tabela
@@ -88,12 +99,17 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
             return;
         }
 
+        const deleteUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/categories/${uuid}`
+        const listUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/categories`
+
+        mutate(listUrl, data?.filter(e => e.uuid !== uuid), false)
+
         const headers = new Headers()
         headers.append("Accept", "application/json")
         headers.append("Content-Type", "application/json")
         // headers.append("Authorization", "Bearer")
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories/${uuid}`, {
+        const res = await fetch(deleteUrl, {
             method: 'DELETE',
             headers: headers,
         })
@@ -101,63 +117,40 @@ const CategoriesList: React.FC<CategoriesProps> = (props : CategoriesProps) => {
         if (res.status !== 200) {
             alert("Erro ao excluir registro!")
         } else {
-            router.replace(router.asPath)
+            // router.replace(router.asPath)
             alert("Registro excluído com sucesso!")
         }
+
+        trigger(listUrl)
     }
 
     return (
-        <div>
-            <h1>Categorias</h1>
+        <div className="container">
+            <Link href="/">Home</Link>
+            <h1>Categorias {data?.length}</h1>
             <br />
             <button type="button" onClick={() => router.push("/categories/create")}>Novo</button>
             <br />
             <br />
-            {categories ? (
-                <div style={{ width: '100%', height: 800, margin: 0, padding: 9 }}>
-                    <DataGrid 
-                            columns={columns} 
-                            pageSize={25} 
-                            rowsPerPageOptions={[10, 20, 25, 50, 100]} 
-                            rows={categories}
-                            components={{
-                                Toolbar: GridToolbar,
-                            }}
-                            sortModel={[
-                                {
-                                field: 'name',
-                                sort: 'asc' as GridSortDirection,
-                                },
-                            ]} 
-                        />
-                </div>
-            ) : (
-                <div>Loading...</div>
-            )}
+            <div style={{ width: '100%', height: 800, margin: 0, padding: 9 }}>
+                <DataGrid 
+                        columns={columns} 
+                        pageSize={25} 
+                        rowsPerPageOptions={[10, 20, 25, 50, 100]} 
+                        rows={data || []}
+                        components={{
+                            Toolbar: GridToolbar,
+                        }}
+                        sortModel={[
+                            {
+                            field: 'name',
+                            sort: 'asc' as GridSortDirection,
+                            },
+                        ]} 
+                    />
+            </div>
         </div>
     )
 }
-
-export const getServerSideProps : GetServerSideProps = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`)
-    const data = await res.json()
-      
-    return { props: { 
-            categories: data 
-        } 
-    }
-}
-
-// SSG
-// export const getStaticProps : GetStaticProps = async () => {
-//     const res = await fetch(`${process.env.API_URL}/api/categories`)
-//     const data = await res.json()
-      
-//     return { props: { 
-//             categories: data 
-//         },
-//         revalidate: 10, 
-//     }
-// }
 
 export default CategoriesList

@@ -3,7 +3,6 @@ import { useRouter } from 'next/router'
 
 import FormError from '../../helpers/FormError'
 
-
 type Category = {
     id: number,
     uuid: string,
@@ -25,7 +24,6 @@ const CategoriesEdit: React.FC = () => {
 
     const { uuid } = router.query
 
-
     // obtem o registro da categoria
     useEffect(() => {
         async function findCategory() {
@@ -41,10 +39,7 @@ const CategoriesEdit: React.FC = () => {
                 })
     
                 if (res.status === 200) {
-                    const categ = await res.json()
-
-                    console.log(categ)
-
+                    const categ : Category = await res.json()
                     // preenche os campos do form
                     setName(categ.name)
 
@@ -74,7 +69,7 @@ const CategoriesEdit: React.FC = () => {
         const formData = {
             'name': name
         }
-        
+    
         // request
 
         const headers = new Headers()
@@ -89,10 +84,9 @@ const CategoriesEdit: React.FC = () => {
         })
 
         if (res.status == 200) {
-            alert('Registro atualizado com sucesso!')
-            router.push('/categories/list')
+            // alert('Registro atualizado com sucesso!')
+            router.push('/categories/list', '',{scroll: false})
         } else {
-            console.log('Falha ao atualizar registro.')
             alert("Falha ao atualizar registro!")
 
             if (res.status === 422) {

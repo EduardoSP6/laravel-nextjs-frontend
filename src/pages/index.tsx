@@ -5,6 +5,8 @@ import NextLogo from '../assets/nextjs.svg'
 
 import { Container } from '../styles/pages/Home'
 
+import Link from 'next/link'
+
 const Home: React.FC = () => {
   return (
     <Container>
@@ -15,6 +17,9 @@ const Home: React.FC = () => {
       <NextLogo />
       <h1>Wellcome to Next.js</h1>
       <p>Project that consumes a laravel API and render with Next.js + Styled Components</p>
+
+      <br /><br />
+      <Link href="/categories/list">Categorias</Link>
     </Container>
   )
 }
